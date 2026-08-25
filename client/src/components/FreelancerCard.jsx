@@ -3,8 +3,26 @@ import { Link } from 'react-router-dom';
 import { Shield, Star, Briefcase, Award, ArrowUpRight, DollarSign } from 'lucide-react';
 import TrustGauge from './TrustGauge';
 
+export const getFreelancerTitle = (freelancer) => {
+  if (freelancer?.title) return freelancer.title;
+  const bio = (freelancer?.bio || '').toLowerCase();
+  const skills = (freelancer?.skills || []).map(s => s.toLowerCase());
+
+  if (bio.includes('data scientist') || bio.includes('machine learning') || skills.includes('python') || skills.includes('tensorflow') || skills.includes('nlp')) {
+    return 'Senior Data Scientist';
+  }
+  if (bio.includes('designer') || bio.includes('ui/ux') || skills.includes('figma') || skills.includes('sketch') || skills.includes('adobe xd')) {
+    return 'UI/UX Design Specialist';
+  }
+  if (skills.includes('node.js') || skills.includes('react') || skills.includes('mongodb') || skills.includes('aws')) {
+    return 'Full-Stack Developer';
+  }
+  return 'Software Engineer';
+};
+
 const FreelancerCard = ({ freelancer }) => {
   const { userId, bio, skills, trustScore, avgRating, totalEarnings, pastWorkCount } = freelancer;
+  const roleTitle = getFreelancerTitle(freelancer);
   
   return (
     <div className="glass group overflow-hidden hover:border-primary/30 transition-all duration-300 relative flex flex-col p-6 animate-fade">
@@ -17,7 +35,7 @@ const FreelancerCard = ({ freelancer }) => {
           <div>
             <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{userId?.name}</h3>
             <p className="text-xs text-text-gray font-medium flex items-center gap-1 leading-normal">
-               <Briefcase className="w-3 h-3 text-primary" /> Full-Stack Developer
+               <Briefcase className="w-3 h-3 text-primary" /> {roleTitle}
             </p>
           </div>
         </div>

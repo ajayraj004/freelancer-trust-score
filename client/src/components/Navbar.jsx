@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Shield, User, LogOut, Menu } from 'lucide-react';
+import { Shield, User, LogOut, Menu, Cpu } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -19,10 +19,15 @@ const Navbar = () => {
           <div className="bg-primary/20 p-2 rounded-xl group-hover:scale-110 transition-transform">
             <Shield className="text-primary w-6 h-6" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">Trust<span className="text-primary">Score</span></span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold tracking-tight text-white leading-none">Trust<span className="text-primary">Score</span></span>
+            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1 mt-0.5">
+              <Cpu className="w-2.5 h-2.5 animate-pulse" /> MERN + AI/ML Live
+            </span>
+          </div>
         </Link>
 
-        {/* Global Navigation - Better Spacing */}
+        {/* Global Navigation */}
         <div className="hidden md:flex items-center gap-10 text-sm font-semibold text-text-gray/80 ml-6">
           <Link to="/" className="hover:text-white transition-colors py-2">Marketplace</Link>
           <Link to="/metrics" className="hover:text-white transition-colors py-2">How it works</Link>
