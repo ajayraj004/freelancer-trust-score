@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const FreelancerSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, default: '' },
   bio: { type: String, default: '' },
   skills: [{ type: String }],
   resumeUrl: { type: String, default: '' },

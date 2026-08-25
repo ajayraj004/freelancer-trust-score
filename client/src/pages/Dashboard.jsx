@@ -6,7 +6,7 @@ import {
   TrendingUp, TrendingDown, Users, Briefcase, 
   DollarSign, Star, Calendar, MessageSquare, 
   Bell, Settings, LayoutDashboard, FileText, 
-  Search, ShieldAlert, Award, Clock, Plus, ArrowRight, User as UserIcon
+  Search, ShieldAlert, Award, Clock, Plus, ArrowRight, User as UserIcon, Brain, Zap
 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { Link, useNavigate } from 'react-router-dom';
@@ -40,6 +40,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [interviews, setInterviews] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [matchedJobs, setMatchedJobs] = useState([]);   // AI Feature 3: matched jobs for freelancer
+  const [matchLoading, setMatchLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('Overview');
 
   useEffect(() => {
@@ -49,6 +51,25 @@ const Dashboard = () => {
           if (user.role === 'freelancer') {
             const freeRes = await api.get(`/freelancers/user/${user.id}`);
             setFreelancer(freeRes.data);
+
+            // ---- AI Feature 3: Job Matching ----
+            // After fetching the freelancer's profile, we call the new
+            // /api/jobs/match endpoint with the freelancer's skills.
+            // The backend sends those skills to Flask which runs TF-IDF
+            // and returns all jobs sorted by cosine similarity score.
+            if (freeRes.data?.skills?.length > 0) {
+              setMatchLoading(true);
+              try {
+                const matchRes = await api.post('/jobs/match', {
+                  skills: freeRes.data.skills
+                });
+                setMatchedJobs(matchRes.data || []);
+              } catch (e) {
+                console.warn('AI job matching unavailable:', e);
+              } finally {
+                setMatchLoading(false);
+              }
+            }
           }
           
           const interRes = await api.get(`/interviews/user/${user.id}`);
@@ -171,13 +192,14 @@ const Dashboard = () => {
                   </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="glass p-8 border-white/5 bg-white/[0.02]">
                     <h3 className="text-lg font-bold mb-8 flex items-center gap-3"><ShieldAlert className="text-primary w-5 h-5" /> Reputation Intelligence</h3>
                     <div className="flex items-center justify-around">
                         <div className="flex flex-col items-center text-center">
                           <TrustGauge score={freelancer?.trustScore || 0} size={150} strokeWidth={12} />
-                          <p className="text-[10px] text-text-gray mt-4 font-bold uppercase tracking-widest uppercase mb-1">CURRENT TRUST RANK</p>
+                          <p className="text-[10px] text-text-gray mt-4 font-bold uppercase tracking-widest mb-1">CURRENT TRUST RANK</p>
                           <h4 className="text-xl font-bold gradient-text">{(freelancer?.trustScore || 0) > 80 ? 'PIONEER LEVEL' : (freelancer?.trustScore || 0) > 40 ? 'VERIFIED' : 'NEWBIE'}</h4>
                         </div>
                         <div className="space-y-6 flex-1 max-w-[200px] ml-10">
@@ -199,6 +221,85 @@ const Dashboard = () => {
                         <Line data={chartData} options={chartOptions} />
                     </div>
                   </div>
+                </div>
+
+                {/* ============================================================
+                    AI FEATURE 3: SMART JOB MATCHING SECTION
+                    Displayed on the freelancer's dashboard.
+                    Shows all available jobs sorted by how well they match
+                    the freelancer's skills (using TF-IDF + Cosine Similarity).
+                    Each job card shows:
+                      - match_percent (e.g. 87%)
+                      - match_label  (e.g. "Excellent Match")
+                      - Budget and required skills
+                ============================================================ */}
+                <div className="glass p-8 border-secondary/20 bg-secondary/5">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold flex items-center gap-3">
+                      <Brain className="text-secondary w-5 h-5" />
+                      AI Job Recommendations
+                      <span className="text-[10px] font-bold text-secondary bg-secondary/10 border border-secondary/20 px-2 py-1 rounded-full uppercase tracking-widest">Powered by TF-IDF</span>
+                    </h3>
+                    {matchLoading && (
+                      <span className="text-[10px] text-text-gray animate-pulse flex items-center gap-1">
+                        <Zap className="w-3 h-3" /> Analyzing...
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Show skills being matched */}
+                  {freelancer?.skills?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      <span className="text-[10px] text-text-gray font-bold uppercase tracking-widest self-center">Matching for:</span>
+                      {freelancer.skills.map((s, i) => (
+                        <span key={i} className="text-[10px] font-bold px-2 py-1 bg-secondary/10 border border-secondary/20 text-secondary rounded-full">{s}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    {matchedJobs.length > 0 ? matchedJobs.slice(0, 5).map((job, i) => {
+                      // Color coding based on match quality
+                      const matchColors = {
+                        'Excellent Match': 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
+                        'Good Match':      'text-primary bg-primary/10 border-primary/20',
+                        'Partial Match':   'text-yellow-400 bg-yellow-400/10 border-yellow-400/20',
+                        'Low Match':       'text-text-gray bg-white/5 border-white/10'
+                      };
+                      const colorClass = matchColors[job.match_label] || matchColors['Low Match'];
+
+                      return (
+                        <div key={job._id || i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-secondary/20 transition-all group">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              {/* Rank number */}
+                              <span className="text-[10px] font-bold text-text-gray">#{i + 1}</span>
+                              <h4 className="text-sm font-bold group-hover:text-secondary transition-colors">{job.title}</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <span className="text-[10px] font-bold text-text-gray">${job.budget}</span>
+                              {job.skills?.slice(0, 3).map((sk, si) => (
+                                <span key={si} className="text-[9px] px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-white/60">{sk}</span>
+                              ))}
+                            </div>
+                          </div>
+                          {/* AI Match Score Badge */}
+                          <div className={`flex flex-col items-center shrink-0 ml-4 px-3 py-2 rounded-xl border ${colorClass}`}>
+                            <span className="text-lg font-bold">{job.match_percent}%</span>
+                            <span className="text-[8px] font-bold uppercase tracking-widest">{job.match_label}</span>
+                          </div>
+                        </div>
+                      );
+                    }) : (
+                      <div className="text-center py-8 border-2 border-dashed border-white/5 rounded-3xl">
+                        <Brain className="w-10 h-10 mx-auto mb-3 text-secondary/30" />
+                        <p className="text-sm text-text-gray">
+                          {matchLoading ? 'AI is finding your best job matches...' : 'No job matches found. Post jobs to see recommendations.'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

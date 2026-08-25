@@ -2,10 +2,16 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
-import { User, Mail, Lock, UserCheck, Shield } from 'lucide-react';
+import { User, Mail, Lock, UserCheck, Code, Brain } from 'lucide-react';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'client' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'freelancer',
+    skills: 'React, Node.js, MongoDB, JavaScript'
+  });
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -34,20 +40,21 @@ const Register = () => {
          </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Role selector */}
           <div className="grid grid-cols-2 gap-4">
-             <button 
-               type="button"
-               onClick={() => setFormData({...formData, role: 'client'})}
-               className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all group ${formData.role === 'client' ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/5 text-text-gray hover:border-white/20'}`}
-             >
-                <User className="w-6 h-6" /> <span className="text-[10px] font-bold uppercase">Client</span>
-             </button>
              <button 
                type="button"
                onClick={() => setFormData({...formData, role: 'freelancer'})}
                className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all group ${formData.role === 'freelancer' ? 'bg-secondary/20 border-secondary text-secondary' : 'bg-white/5 border-white/5 text-text-gray hover:border-white/20'}`}
              >
                 <UserCheck className="w-6 h-6" /> <span className="text-[10px] font-bold uppercase">Freelancer</span>
+             </button>
+             <button 
+               type="button"
+               onClick={() => setFormData({...formData, role: 'client'})}
+               className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all group ${formData.role === 'client' ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/5 text-text-gray hover:border-white/20'}`}
+             >
+                <User className="w-6 h-6" /> <span className="text-[10px] font-bold uppercase">Client</span>
              </button>
           </div>
 
@@ -87,11 +94,32 @@ const Register = () => {
              />
           </div>
 
+          {/* Skills Field for Freelancers */}
+          {formData.role === 'freelancer' && (
+            <div className="space-y-1.5 px-1">
+               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest flex items-center gap-1.5">
+                 <Code className="w-3 h-3" /> Your Skills (Comma Separated for AI Matching)
+               </label>
+               <input 
+                 type="text" 
+                 required
+                 className="w-full bg-secondary/10 border border-secondary/30 rounded-xl py-3.5 px-5 text-white focus:outline-none focus:ring-1 focus:ring-secondary/50 font-medium transition-all"
+                 placeholder="React, Node.js, MongoDB, Python, Figma"
+                 value={formData.skills}
+                 onChange={(e) => setFormData({...formData, skills: e.target.value})}
+               />
+               <p className="text-[10px] text-text-gray italic flex items-center gap-1 mt-1">
+                 <Brain className="w-3 h-3 text-secondary inline shrink-0" />
+                 Our AI will use these skills to rank and recommend relevant jobs on your dashboard using TF-IDF.
+               </p>
+            </div>
+          )}
+
           <button 
             disabled={loading}
             className="w-full btn-primary !py-4 font-bold text-lg shadow-none group"
           >
-            {loading ? 'Creating Account...' : 'Continue'}
+            {loading ? 'Creating Account...' : 'Create Account & Get AI Matches'}
           </button>
         </form>
 
