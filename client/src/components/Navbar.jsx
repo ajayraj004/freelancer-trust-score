@@ -19,12 +19,7 @@ const Navbar = () => {
           <div className="bg-primary/20 p-2 rounded-xl group-hover:scale-110 transition-transform">
             <Shield className="text-primary w-6 h-6" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-white leading-none">Trust<span className="text-primary">Score</span></span>
-            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1 mt-0.5">
-              <Cpu className="w-2.5 h-2.5 animate-pulse" /> MERN + AI/ML Live
-            </span>
-          </div>
+          <span className="text-xl font-bold tracking-tight text-white">Trust<span className="text-primary">Score</span></span>
         </Link>
 
         {/* Global Navigation */}

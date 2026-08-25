@@ -94,32 +94,11 @@ const Register = () => {
              />
           </div>
 
-          {/* Skills Field for Freelancers */}
-          {formData.role === 'freelancer' && (
-            <div className="space-y-1.5 px-1">
-               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest flex items-center gap-1.5">
-                 <Code className="w-3 h-3" /> Your Skills (Comma Separated for AI Matching)
-               </label>
-               <input 
-                 type="text" 
-                 required
-                 className="w-full bg-secondary/10 border border-secondary/30 rounded-xl py-3.5 px-5 text-white focus:outline-none focus:ring-1 focus:ring-secondary/50 font-medium transition-all"
-                 placeholder="React, Node.js, MongoDB, Python, Figma"
-                 value={formData.skills}
-                 onChange={(e) => setFormData({...formData, skills: e.target.value})}
-               />
-               <p className="text-[10px] text-text-gray italic flex items-center gap-1 mt-1">
-                 <Brain className="w-3 h-3 text-secondary inline shrink-0" />
-                 Our AI will use these skills to rank and recommend relevant jobs on your dashboard using TF-IDF.
-               </p>
-            </div>
-          )}
-
           <button 
             disabled={loading}
             className="w-full btn-primary !py-4 font-bold text-lg shadow-none group"
           >
-            {loading ? 'Creating Account...' : 'Create Account & Get AI Matches'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
